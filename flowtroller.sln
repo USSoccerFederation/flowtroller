@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "flowtroller", "flowtroller\flowtroller.csproj", "{D9F38C16-3270-4CDE-A5D6-0D3CAF2741B8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "flowtroller.Test", "flowtroller.Test\flowtroller.Test.csproj", "{7BA57353-FE0D-43EF-A4AC-11F2697967AF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D9F38C16-3270-4CDE-A5D6-0D3CAF2741B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9F38C16-3270-4CDE-A5D6-0D3CAF2741B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9F38C16-3270-4CDE-A5D6-0D3CAF2741B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9F38C16-3270-4CDE-A5D6-0D3CAF2741B8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7BA57353-FE0D-43EF-A4AC-11F2697967AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7BA57353-FE0D-43EF-A4AC-11F2697967AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7BA57353-FE0D-43EF-A4AC-11F2697967AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7BA57353-FE0D-43EF-A4AC-11F2697967AF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
