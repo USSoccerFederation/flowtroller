@@ -6,10 +6,10 @@
             "value": "dev"
         },
         "aspSkuName": {
-            "value": "F1"
+            "value": "B1"
         },
         "aspSkuTier": {
-            "value": "Free"
+            "value": "Basic"
         },
         "instanceCount": {
             "value": 1
