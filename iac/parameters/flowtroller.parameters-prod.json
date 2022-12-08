@@ -1,0 +1,21 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "environment": {
+            "value": "prod"
+        },
+        "aspSkuName": {
+            "value": "B1"
+        },
+        "aspSkuTier": {
+            "value": "Basic"
+        },
+        "instanceCount": {
+            "value": 2
+        },
+        "APPLICATIONINSIGHTS_CONFIGURATION_CONTENT": {
+            "value": "{\n  \"role\": {   \n    \"name\": \"app-flowtroller-prod\"\n  }\n}"
+        }
+    }
+}

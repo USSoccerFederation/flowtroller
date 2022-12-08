@@ -1,12 +1,28 @@
-name: Shell commands
+name: deploy iac
 
 on: [push]
 
 jobs:
-  run-shell-command:
+
+  deploy-bicep:
     runs-on: windows-latest
+    permissions:
+      contents: read
+      packages: write
+
     steps:
-      - name: echo a string
-        run: echo "Hello World"
-      - name: get powershell version
-        run: powershell $psversiontable.PSVersion
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: deploy
+        uses: azure/arm-deploy@v1
+        with:
+          subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION }}
+          resourceGroupName: ${{ secrets.AZURE_RG }}
+          template: ./iac/main.bicep
+          parameters: ./iac/parameters/flowtroller.parameters-dev.json
+          failOnStdErr: false
