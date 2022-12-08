@@ -54,9 +54,6 @@ module appInsights 'modules/insights.bicep' = {
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
   name: 'asp-flowtroller-${environment}-${iterationId}'
   kind: 'app'
-  properties: {
-    reserved: true
-  }
   sku: { name: aspSkuName, tier: aspSkuTier, capacity: instanceCount }
   tags: { buildstamp: buildstamp }
   location: location
