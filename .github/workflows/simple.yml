@@ -66,7 +66,7 @@ jobs:
           resourceGroupName: ${{ secrets.AZURE_RG }}
           template: ./iac/main.bicep
           parameters: ./iac/parameters/flowtroller.parameters-dev.json
-          failOnStdErr: false
+          failOnStdErr: true
 
   deploy-app:
     permissions:
