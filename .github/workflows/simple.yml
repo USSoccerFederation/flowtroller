@@ -3,7 +3,7 @@ name: deploy
 env:
   AZURE_WEBAPP_NAME: app-flowtroller-dev-001
   AZURE_WEBAPP_PACKAGE_PATH: '.'
-  DOTNET_VERSION: '6'
+  DOTNET_VERSION: '6.*'
 
 on:
   push:
