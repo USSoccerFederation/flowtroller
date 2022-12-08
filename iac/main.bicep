@@ -68,6 +68,8 @@ resource webApp 'Microsoft.Web/sites@2022-03-01' = {
     httpsOnly: true
     clientAffinityEnabled: false
     siteConfig: {
+      netFrameworkVersion: 'v6.0'
+      healthCheckPath: '/Greeting'
       webSocketsEnabled: false
       http20Enabled: true
       minTlsVersion: '1.2'
