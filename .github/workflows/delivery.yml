@@ -1,4 +1,4 @@
-name: deploy
+name: Continuous Delivery
 
 env:
   AZURE_WEBAPP_NAME: app-flowtroller-dev-001
@@ -15,6 +15,23 @@ permissions:
   contents: read
 
 jobs:
+  validate:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+    - name: Restore Dependencies
+      run: dotnet restore
+    - name: Build Solution
+      run: dotnet build --no-restore
+    - name: Run Unit Tests
+      run: dotnet test --no-build --verbosity normal
+
   build-solution:
     name: build solution
     runs-on: ubuntu-latest
@@ -27,7 +44,7 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Set up dependency caching for faster builds
+      - name: Cache Dependencies
         uses: actions/cache@v3
         with:
           path: ~/.nuget/packages
@@ -35,20 +52,20 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-
 
-      - name: Build with dotnet
+      - name: Build Solution
         run: dotnet build --configuration Release
 
-      - name: dotnet publish
+      - name: Publish
         run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
 
-      - name: Upload artifact for deployment job
+      - name: Upload Artifacts for Deployment Job
         uses: actions/upload-artifact@v3
         with:
           name: .net-app
           path: ${{env.DOTNET_ROOT}}/myapp
 
   deploy-appservice:
-    name: deploy azure resources
+    name: Deploy Azure Resources
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -62,7 +79,7 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: bicep deploy
+      - name: Bicep Deploy
         uses: azure/arm-deploy@v1
         with:
           subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION }}
@@ -72,7 +89,7 @@ jobs:
           failOnStdErr: true
 
   deploy-app:
-    name: deploy flowtroller app
+    name: Deploy flowtroller App
     permissions:
       contents: none
     runs-on: ubuntu-latest
@@ -82,7 +99,7 @@ jobs:
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
-      - name: Download artifact from build job
+      - name: Download Artifacts from Build Job
         uses: actions/download-artifact@v3
         with:
           name: .net-app
