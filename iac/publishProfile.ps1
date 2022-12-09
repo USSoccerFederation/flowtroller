@@ -16,8 +16,9 @@ Param(
     $SubscriptionId = ""
 )
 
-Import-Module -Name Az.Accounts
-Import-Module -Name Az.Websites
+Set-PSRepository PSGallery -InstallationPolicy Trusted
+Install-Module -Name Az.Accounts -Force
+Install-Module -Name Az.Websites -Force
 
 $clientId = ($env:AZURE_CLIENTID)
 $clientSecret = ($env:AZURE_CLIENTSECRET | ConvertTo-SecureString -AsPlainText -Force)
@@ -30,17 +31,13 @@ if (-not [string]::IsNullOrWhiteSpace($SubscriptionId)) {
     Set-AzContext -Subscription $SubscriptionId
 }
 
-$pub_profile = $null
-
 if ([System.Convert]::ToBoolean($Reset) -eq $true) {
     $pub_profile = Reset-AzWebAppPublishingProfile -ResourceGroupName $ResourceGroupName -Name $AppName
 
     $pub_profile = $null
 }
 else {
-    $pub_profile = Get-AzWebAppPublishingProfile -ResourceGroupName $ResourceGroupName -Name $AppName
-
-    $env:AZURE_WEBAPP_PUBLISH_PROFILE = $pub_profile
+    $env:AZURE_WEBAPP_PUBLISH_PROFILE = Get-AzWebAppPublishingProfile -ResourceGroupName $ResourceGroupName -Name $AppName
 }
 
 if($env:AZURE_WEBAPP_PUBLISH_PROFILE) {

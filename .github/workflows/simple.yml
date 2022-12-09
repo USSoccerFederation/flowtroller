@@ -84,29 +84,29 @@ jobs:
         with:
           name: .net-app
 
-      # - name: Get current webapp publish profile
-      #   uses: actions/checkout@v1
-      # - run: ./iac/publishProfile.ps1 -ResourceGroupName ${{ secrets.AZURE_RG }} -AppName ${{ env.AZURE_WEBAPP_NAME }}
-      #   env:
-      #     AZURE_CLIENTID: ${{ secrets.AZURE_CLIENTID }}
-      #     AZURE_CLIENTSECRET: ${{ secrets.AZURE_CLIENTSECRET }}
-      #     AZURE_TENANTID: ${{ secrets.AZURE_TENANTID }}
-      #   shell: pwsh
-
       - uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Get Current Publish Profile
+      - name: Get current webapp publish profile
+        uses: actions/checkout@v1
+      - run: ./iac/publishProfile.ps1 -ResourceGroupName ${{ env.AZURE_RG }} -AppName ${{ env.AZURE_WEBAPP_NAME }}
         env:
-          AZURE_RG: ${{ env.AZURE_RG }}
-          AZURE_WEBAPP_NAME: ${{ env.AZURE_WEBAPP_NAME }}
-        run: |
-            Set-PSRepository PSGallery -InstallationPolicy Trusted
-            Install-Module Az.Websites -force
-            $env:AZURE_WEBAPP_PUBLISH_PROFILE = Get-AzWebAppPublishingProfile -ResourceGroupName ${{ env.AZURE_RG }} -Name ${{ env.AZURE_WEBAPP_NAME }}
-            $env:AZURE_WEBAPP_PUBLISH_PROFILE
+          AZURE_CLIENTID: ${{ secrets.AZURE_CLIENTID }}
+          AZURE_CLIENTSECRET: ${{ secrets.AZURE_CLIENTSECRET }}
+          AZURE_TENANTID: ${{ secrets.AZURE_TENANTID }}
         shell: pwsh
+
+      # - name: Get Current Publish Profile
+      #   env:
+      #     AZURE_RG: ${{ env.AZURE_RG }}
+      #     AZURE_WEBAPP_NAME: ${{ env.AZURE_WEBAPP_NAME }}
+      #   run: |
+      #       Set-PSRepository PSGallery -InstallationPolicy Trusted
+      #       Install-Module Az.Websites -force
+      #       $env:AZURE_WEBAPP_PUBLISH_PROFILE = Get-AzWebAppPublishingProfile -ResourceGroupName ${{ env.AZURE_RG }} -Name ${{ env.AZURE_WEBAPP_NAME }}
+      #       $env:AZURE_WEBAPP_PUBLISH_PROFILE
+      #   shell: pwsh
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
