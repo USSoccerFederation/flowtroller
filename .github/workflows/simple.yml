@@ -14,53 +14,39 @@ permissions:
   contents: read
 
 jobs:
-  # build-solution:
-  #   runs-on: ubuntu-latest
-
-  #   steps:
-  #     - uses: actions/checkout@v3
-
-  #     - name: Set up .NET Core
-  #       uses: actions/setup-dotnet@v2
-  #       with:
-  #         dotnet-version: ${{ env.DOTNET_VERSION }}
-
-  #     - name: Set up dependency caching for faster builds
-  #       uses: actions/cache@v3
-  #       with:
-  #         path: ~/.nuget/packages
-  #         key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
-  #         restore-keys: |
-  #           ${{ runner.os }}-nuget-
-
-  #     - name: Build with dotnet
-  #       run: dotnet build --configuration Release
-
-  #     - name: dotnet publish
-  #       run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
-
-  #     - name: Upload artifact for deployment job
-  #       uses: actions/upload-artifact@v3
-  #       with:
-  #         name: .net-app
-  #         path: ${{env.DOTNET_ROOT}}/myapp
-
-  get-modules-ubuntu:
+  build-solution:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
 
-      - name: install Az modules
-        run: |
-            Set-PSRepository PSGallery -InstallationPolicy Trusted
-            Install-Module Az.Accounts -force
-            Install-Module Az.Websites -force 
-            Get-Module -ListAvailable
-        shell: pwsh
-###
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Set up dependency caching for faster builds
+        uses: actions/cache@v3
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Build with dotnet
+        run: dotnet build --configuration Release
+
+      - name: dotnet publish
+        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
+
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v3
+        with:
+          name: .net-app
+          path: ${{env.DOTNET_ROOT}}/myapp
+
   # deploy-azure-webapp:
-  #   runs-on: windows-latest
+  #   runs-on: ubuntu-latest
   #   permissions:
   #     contents: read
   #     packages: write
@@ -81,34 +67,41 @@ jobs:
   #         template: ./iac/main.bicep
   #         parameters: ./iac/parameters/flowtroller.parameters-dev.json
   #         failOnStdErr: true
-###
-  # deploy-app:
-  #   permissions:
-  #     contents: none
-  #   runs-on: ubuntu-latest
-  #   needs: [build-solution]
-  #   environment:
-  #     name: "dev"
-  #     url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
-  #   steps:
-  #     - name: Get current webapp publish profile
-  #       uses: actions/checkout@v3
-  #       env:
-  #         AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-  #     - run: |
-  #         ./iac/publishProfile.ps1 -ResourceGroupName ${{ secrets.AZURE_RG }} -AppName ${{ env.AZURE_WEBAPP_NAME }}
-  #       shell: pwsh
+  deploy-app:
+    permissions:
+      contents: none
+    runs-on: ubuntu-latest
+    needs: [build-solution]
+    environment:
+      name: "dev"
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
-  #     - name: Download artifact from build job
-  #       uses: actions/download-artifact@v3
-  #       with:
-  #         name: .net-app
+    steps:
+      - name: install Az modules
+        run: |
+            Set-PSRepository PSGallery -InstallationPolicy Trusted
+            Install-Module Az.Accounts -force
+            Install-Module Az.Websites -force 
+            Get-Module -ListAvailable
+        shell: pwsh
 
-  #     - name: Deploy to Azure Web App
-  #       id: deploy-to-webapp
-  #       uses: azure/webapps-deploy@v2
-  #       with:
-  #         app-name: ${{ env.AZURE_WEBAPP_NAME }}
-  #         publish-profile: ${{ env.AZURE_WEBAPP_PUBLISH_PROFILE }}
-  #         package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+      - name: Get current webapp publish profile
+        uses: actions/checkout@v3
+        env:
+          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+      - run: ./iac/publishProfile.ps1 -ResourceGroupName ${{ secrets.AZURE_RG }} -AppName ${{ env.AZURE_WEBAPP_NAME }}
+        shell: pwsh
+
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v3
+        with:
+          name: .net-app
+
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ env.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
