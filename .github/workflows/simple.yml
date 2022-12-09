@@ -2,6 +2,7 @@ name: deploy
 
 env:
   AZURE_WEBAPP_NAME: app-flowtroller-dev-001
+  AZURE_RG: rg-flowtroller-dev
   AZURE_WEBAPP_PACKAGE_PATH: "."
   DOTNET_VERSION: "6.*"
 
@@ -45,46 +46,43 @@ jobs:
           name: .net-app
           path: ${{env.DOTNET_ROOT}}/myapp
 
-  # deploy-azure-webapp:
-  #   runs-on: ubuntu-latest
-  #   permissions:
-  #     contents: read
-  #     packages: write
+  deploy-azure-webapp:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
 
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v3
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-  #     - uses: azure/login@v1
-  #       with:
-  #         creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-  #     - name: deploy
-  #       uses: azure/arm-deploy@v1
-  #       with:
-  #         subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION }}
-  #         resourceGroupName: ${{ secrets.AZURE_RG }}
-  #         template: ./iac/main.bicep
-  #         parameters: ./iac/parameters/flowtroller.parameters-dev.json
-  #         failOnStdErr: true
+      - name: deploy
+        uses: azure/arm-deploy@v1
+        with:
+          subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION }}
+          resourceGroupName: ${{ secrets.AZURE_RG }}
+          template: ./iac/main.bicep
+          parameters: ./iac/parameters/flowtroller.parameters-dev.json
+          failOnStdErr: true
 
   deploy-app:
     permissions:
       contents: none
     runs-on: ubuntu-latest
-    needs: [build-solution]
+    needs: [build-solution, deploy-azure-webapp]
     environment:
       name: "dev"
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
-    #   - name: install Az modules
-    #     run: |
-    #         Set-PSRepository PSGallery -InstallationPolicy Trusted
-    #         Install-Module Az.Accounts -force
-    #         Install-Module Az.Websites -force 
-    #         Get-Module -ListAvailable
-    #     shell: pwsh
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v3
+        with:
+          name: .net-app
 
       # - name: Get current webapp publish profile
       #   uses: actions/checkout@v1
@@ -95,15 +93,20 @@ jobs:
       #     AZURE_TENANTID: ${{ secrets.AZURE_TENANTID }}
       #   shell: pwsh
 
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v3
+      - uses: azure/login@v1
         with:
-          name: .net-app
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Get Current Publish Profile
+        run: |
+            az webapp deployment list-publishing-profiles --name ${{ env.AZURE_WEBAPP_NAME }} --resource-group ${{ env.AZURE_RG }} --xml >> $GITHUB_OUTPUT
+        id: pub_profile
+        shell: bash
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          publish-profile: ${{ steps.pub_profile.outputs }}
           package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
