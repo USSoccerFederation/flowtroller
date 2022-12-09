@@ -98,6 +98,9 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Get Current Publish Profile
+        env:
+          AZURE_RG: ${{ env.AZURE_RG }}
+          AZURE_WEBAPP_NAME: ${{ env.AZURE_WEBAPP_NAME }}
         run: |
             Set-PSRepository PSGallery -InstallationPolicy Trusted
             Install-Module Az.Websites -force
