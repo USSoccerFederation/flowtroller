@@ -116,7 +116,7 @@ jobs:
             $credentials = New-Object System.Management.Automation.PSCredential($clientId, $clientSecret)
             Connect-AzAccount -ServicePrincipal -Credential $credentials -Tenant $tenantId
 
-            $env:AZURE_WEBAPP_PUBLISH_PROFILE = Get-AzWebAppPublishingProfile -ResourceGroupName $ResourceGroupName -Name $AppName
+            $env:AZURE_WEBAPP_PUBLISH_PROFILE = (Get-AzWebAppPublishingProfile -ResourceGroupName $env:AZURE_RG -Name $env:AZURE_WEBAPP_NAME)
 
             if($env:AZURE_WEBAPP_PUBLISH_PROFILE) {
                 Write-Output "env variable was set"
