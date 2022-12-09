@@ -78,19 +78,13 @@ jobs:
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
-      - name: Get WebApp publish profile
-        id: webapp
-        uses: aliencube/publish-profile-actions@v1
+      - name: Get current webapp publish profile
+        uses: actions/checkout@v3
         env:
           AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-        with:
-          resourceGroupName: ${{ secrets.AZURE_RG }}
-          appName: ${{ env.AZURE_WEBAPP_NAME }}
-
-      - name: Show Publishing Profile
-        shell: bash
-        run: |
-          echo "WebApp: ${{ steps.webapp.outputs.profile }}"
+      - run: |
+          ./iac/publishProfile.ps1 -ResourceGroupName ${{ secrets.AZURE_RG }} -AppName ${{ env.AZURE_WEBAPP_NAME }}
+        shell: pwsh
 
       - name: Download artifact from build job
         uses: actions/download-artifact@v3
@@ -102,5 +96,5 @@ jobs:
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          publish-profile: ${{ steps.webapp.outputs.profile }}
+          publish-profile: ${{ env.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
