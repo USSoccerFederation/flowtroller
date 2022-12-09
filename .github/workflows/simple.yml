@@ -78,38 +78,22 @@ jobs:
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
-      - name: install Az modules
-        run: |
-            Set-PSRepository PSGallery -InstallationPolicy Trusted
-            Install-Module Az.Accounts -force
-            Install-Module Az.Websites -force 
-            Get-Module -ListAvailable
-        shell: pwsh
+    #   - name: install Az modules
+    #     run: |
+    #         Set-PSRepository PSGallery -InstallationPolicy Trusted
+    #         Install-Module Az.Accounts -force
+    #         Install-Module Az.Websites -force 
+    #         Get-Module -ListAvailable
+    #     shell: pwsh
 
       # - name: Get current webapp publish profile
-      #   uses: actions/checkout@v3
+      #   uses: actions/checkout@v1
+      # - run: ./iac/publishProfile.ps1 -ResourceGroupName ${{ secrets.AZURE_RG }} -AppName ${{ env.AZURE_WEBAPP_NAME }}
       #   env:
-      #     AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-      # - run: |
-      #       Import-Module -Name Az.Accounts
-      #       Import-Module -Name Az.Websites
-
-      #       $clientId = (${{ secrets.AZURE_CLIENTID }}
-      #       $clientSecret = (${{ secrets.AZURE_CLIENTSECRET }}
-      #       $tenantId = (${{ secrets.AZURE_TENANTID }}
-
-      #       $credentials = New-Object System.Management.Automation.PSCredential($clientId, $clientSecret)
-      #       Connect-AzAccount -ServicePrincipal -Credential $credentials -Tenant $tenantId
+      #     AZURE_CLIENTID: ${{ secrets.AZURE_CLIENTID }}
+      #     AZURE_CLIENTSECRET: ${{ secrets.AZURE_CLIENTSECRET }}
+      #     AZURE_TENANTID: ${{ secrets.AZURE_TENANTID }}
       #   shell: pwsh
-
-      - name: Get current webapp publish profile
-        uses: actions/checkout@v1
-      - run: ./iac/publishProfile.ps1 -ResourceGroupName ${{ secrets.AZURE_RG }} -AppName ${{ env.AZURE_WEBAPP_NAME }}
-        env:
-          AZURE_CLIENTID: ${{ secrets.AZURE_CLIENTID }}
-          AZURE_CLIENTSECRET: ${{ secrets.AZURE_CLIENTSECRET }}
-          AZURE_TENANTID: ${{ secrets.AZURE_TENANTID }}
-        shell: pwsh
 
       - name: Download artifact from build job
         uses: actions/download-artifact@v3
@@ -121,5 +105,5 @@ jobs:
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          publish-profile: ${{ env.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
