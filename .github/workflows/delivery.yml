@@ -1,0 +1,155 @@
+name: Continuous Delivery
+
+env:
+  AZURE_WEBAPP_NAME: app-flowtroller-dev-001
+  AZURE_RG: rg-flowtroller-dev
+  AZURE_WEBAPP_PACKAGE_PATH: "."
+  DOTNET_VERSION: "6.*"
+
+on:
+  push:
+    branches: ["develop"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+    - name: Restore Dependencies
+      run: dotnet restore
+    - name: Build Solution
+      run: dotnet build --no-restore
+    - name: Run Unit Tests
+      run: dotnet test --no-build --verbosity normal
+
+  build-solution:
+    name: build solution
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Cache Dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Build Solution
+        run: dotnet build --configuration Release
+
+      - name: Publish
+        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
+
+      - name: Upload Artifacts for Deployment Job
+        uses: actions/upload-artifact@v3
+        with:
+          name: .net-app
+          path: ${{env.DOTNET_ROOT}}/myapp
+
+  deploy-appservice:
+    name: Deploy Azure Resources
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Bicep Deploy
+        uses: azure/arm-deploy@v1
+        with:
+          subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION }}
+          resourceGroupName: ${{ secrets.AZURE_RG }}
+          template: ./iac/main.bicep
+          parameters: ./iac/parameters/flowtroller.parameters-dev.json
+          failOnStdErr: true
+
+  deploy-app:
+    name: Deploy flowtroller App
+    permissions:
+      contents: none
+    runs-on: ubuntu-latest
+    needs: [build-solution, deploy-appservice]
+    environment:
+      name: "dev"
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+
+    steps:
+      - name: Download Artifacts from Build Job
+        uses: actions/download-artifact@v3
+        with:
+          name: .net-app
+
+      - uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # - name: Get current webapp publish profile
+      #   uses: actions/checkout@v1
+      # - run: ./iac/publishProfile.ps1 -ResourceGroupName ${{ env.AZURE_RG }} -AppName ${{ env.AZURE_WEBAPP_NAME }}
+      #   env:
+      #     AZURE_CLIENTID: ${{ secrets.AZURE_CLIENTID }}
+      #     AZURE_CLIENTSECRET: ${{ secrets.AZURE_CLIENTSECRET }}
+      #     AZURE_TENANTID: ${{ secrets.AZURE_TENANTID }}
+      #   shell: pwsh
+
+      - name: Get Current Publish Profile
+        env:
+          AZURE_RG: ${{ env.AZURE_RG }}
+          AZURE_WEBAPP_NAME: ${{ env.AZURE_WEBAPP_NAME }}
+          AZURE_CLIENTID: ${{ secrets.AZURE_CLIENTID }}
+          AZURE_CLIENTSECRET: ${{ secrets.AZURE_CLIENTSECRET }}
+          AZURE_TENANTID: ${{ secrets.AZURE_TENANTID }}
+        run: |
+            Set-PSRepository PSGallery -InstallationPolicy Trusted
+            Install-Module -Name Az.Accounts -Force
+            Install-Module -Name Az.Websites -Force
+
+            $clientId = ($env:AZURE_CLIENTID)
+            $clientSecret = ($env:AZURE_CLIENTSECRET | ConvertTo-SecureString -AsPlainText -Force)
+            $tenantId = ($env:AZURE_TENANTID)
+
+            $credentials = New-Object System.Management.Automation.PSCredential($clientId, $clientSecret)
+            Connect-AzAccount -ServicePrincipal -Credential $credentials -Tenant $tenantId
+
+            $env:AZURE_WEBAPP_PUBLISH_PROFILE = (Get-AzWebAppPublishingProfile -ResourceGroupName $env:AZURE_RG -Name $env:AZURE_WEBAPP_NAME)
+
+            if($env:AZURE_WEBAPP_PUBLISH_PROFILE) {
+                Write-Output "env variable was set"
+            }
+            else {
+                Write-Output "env variable NOT set!"
+            }
+        shell: pwsh
+
+      - name: Deploy to Azure appService
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ env.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
