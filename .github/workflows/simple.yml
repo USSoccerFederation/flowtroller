@@ -86,28 +86,30 @@ jobs:
             Get-Module -ListAvailable
         shell: pwsh
 
-      - name: Get current webapp publish profile
-        uses: actions/checkout@v3
-        env:
-          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-      - run: |
-            Import-Module -Name Az.Accounts
-            Import-Module -Name Az.Websites
-
-            $clientId = (${{ secrets.AZURE_CREDENTIALS }} | ConvertFrom-Json).clientId
-            $clientSecret = (${{ secrets.AZURE_CREDENTIALS }} | ConvertFrom-Json).clientSecret | ConvertTo-SecureString -AsPlainText -Force
-            $tenantId = (${{ secrets.AZURE_CREDENTIALS }} | ConvertFrom-Json).tenantId
-
-            $credentials = New-Object System.Management.Automation.PSCredential($clientId, $clientSecret)
-            Connect-AzAccount -ServicePrincipal -Credential $credentials -Tenant $tenantId
-        shell: pwsh
-
       # - name: Get current webapp publish profile
       #   uses: actions/checkout@v3
       #   env:
       #     AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-      # - run: ./iac/publishProfile.ps1 -ResourceGroupName ${{ secrets.AZURE_RG }} -AppName ${{ env.AZURE_WEBAPP_NAME }}
+      # - run: |
+      #       Import-Module -Name Az.Accounts
+      #       Import-Module -Name Az.Websites
+
+      #       $clientId = (${{ secrets.AZURE_CLIENTID }}
+      #       $clientSecret = (${{ secrets.AZURE_CLIENTSECRET }}
+      #       $tenantId = (${{ secrets.AZURE_TENANTID }}
+
+      #       $credentials = New-Object System.Management.Automation.PSCredential($clientId, $clientSecret)
+      #       Connect-AzAccount -ServicePrincipal -Credential $credentials -Tenant $tenantId
       #   shell: pwsh
+
+      - name: Get current webapp publish profile
+        uses: actions/checkout@v3
+      - run: ./iac/publishProfile.ps1 -ResourceGroupName ${{ secrets.AZURE_RG }} -AppName ${{ env.AZURE_WEBAPP_NAME }}
+        env:
+          AZURE_CLIENTID: ${{ secrets.AZURE_CLIENTID }}
+          AZURE_CLIENTSECRET: ${{ secrets.AZURE_CLIENTSECRET }}
+          AZURE_TENANTID: ${{ secrets.AZURE_TENANTID }}
+        shell: pwsh
 
       - name: Download artifact from build job
         uses: actions/download-artifact@v3

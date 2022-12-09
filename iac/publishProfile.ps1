@@ -19,9 +19,9 @@ Param(
 Import-Module -Name Az.Accounts
 Import-Module -Name Az.Websites
 
-$clientId = ($env:AZURE_CREDENTIALS | ConvertFrom-Json).clientId
-$clientSecret = ($env:AZURE_CREDENTIALS | ConvertFrom-Json).clientSecret | ConvertTo-SecureString -AsPlainText -Force
-$tenantId = ($env:AZURE_CREDENTIALS | ConvertFrom-Json).tenantId
+$clientId = ($env:AZURE_CLIENTID)
+$clientSecret = ($env:AZURE_CLIENTSECRET | ConvertTo-SecureString -AsPlainText -Force)
+$tenantId = ($env:AZURE_TENANTID)
 
 $credentials = New-Object System.Management.Automation.PSCredential($clientId, $clientSecret)
 Connect-AzAccount -ServicePrincipal -Credential $credentials -Tenant $tenantId
