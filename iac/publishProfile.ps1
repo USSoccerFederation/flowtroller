@@ -42,3 +42,10 @@ else {
 
     $env:AZURE_WEBAPP_PUBLISH_PROFILE = $pub_profile
 }
+
+if($env:AZURE_WEBAPP_PUBLISH_PROFILE) {
+    Write-Output "env variable was set"
+}
+else {
+    Write-Output "env variable NOT set!"
+}

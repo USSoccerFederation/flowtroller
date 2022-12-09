@@ -103,7 +103,7 @@ jobs:
       #   shell: pwsh
 
       - name: Get current webapp publish profile
-        uses: actions/checkout@v3
+        uses: actions/checkout@v1
       - run: ./iac/publishProfile.ps1 -ResourceGroupName ${{ secrets.AZURE_RG }} -AppName ${{ env.AZURE_WEBAPP_NAME }}
         env:
           AZURE_CLIENTID: ${{ secrets.AZURE_CLIENTID }}
