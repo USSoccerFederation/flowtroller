@@ -16,6 +16,7 @@ permissions:
 
 jobs:
   build-solution:
+    name: build solution
     runs-on: ubuntu-latest
 
     steps:
@@ -46,34 +47,36 @@ jobs:
           name: .net-app
           path: ${{env.DOTNET_ROOT}}/myapp
 
-  # deploy-azure-webapp:
-  #   runs-on: ubuntu-latest
-  #   permissions:
-  #     contents: read
-  #     packages: write
+  deploy-appservice:
+    name: deploy azure resources
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
 
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v3
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-  #     - uses: azure/login@v1
-  #       with:
-  #         creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-  #     - name: deploy
-  #       uses: azure/arm-deploy@v1
-  #       with:
-  #         subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION }}
-  #         resourceGroupName: ${{ secrets.AZURE_RG }}
-  #         template: ./iac/main.bicep
-  #         parameters: ./iac/parameters/flowtroller.parameters-dev.json
-  #         failOnStdErr: true
+      - name: bicep deploy
+        uses: azure/arm-deploy@v1
+        with:
+          subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION }}
+          resourceGroupName: ${{ secrets.AZURE_RG }}
+          template: ./iac/main.bicep
+          parameters: ./iac/parameters/flowtroller.parameters-dev.json
+          failOnStdErr: true
 
   deploy-app:
+    name: deploy flowtroller app
     permissions:
       contents: none
     runs-on: ubuntu-latest
-    needs: [build-solution]
+    needs: [build-solution, deploy-appservice]
     environment:
       name: "dev"
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
@@ -126,7 +129,7 @@ jobs:
             }
         shell: pwsh
 
-      - name: Deploy to Azure Web App
+      - name: Deploy to Azure appService
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
