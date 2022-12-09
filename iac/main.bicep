@@ -53,7 +53,10 @@ module appInsights 'modules/insights.bicep' = {
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
   name: 'asp-flowtroller-${environment}-${iterationId}'
-  kind: 'app'
+  kind: 'app,linux'
+  properties: {
+    reserved: true
+  }
   sku: { name: aspSkuName, tier: aspSkuTier, capacity: instanceCount }
   tags: { buildstamp: buildstamp }
   location: location
@@ -68,6 +71,9 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
     httpsOnly: true
     clientAffinityEnabled: false
     siteConfig: {
+      netFrameworkVersion: 'v6.0'
+      appCommandLine: 'dotnet flowtroller.dll'
+      linuxFxVersion: 'DOTNETCORE|6.0'
       healthCheckPath: '/Greeting'
       webSocketsEnabled: false
       http20Enabled: true

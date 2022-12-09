@@ -99,14 +99,16 @@ jobs:
 
       - name: Get Current Publish Profile
         run: |
-            az webapp deployment list-publishing-profiles --name ${{ env.AZURE_WEBAPP_NAME }} --resource-group ${{ env.AZURE_RG }} --xml >> $GITHUB_OUTPUT
-        id: pub_profile
-        shell: bash
+            Set-PSRepository PSGallery -InstallationPolicy Trusted
+            Install-Module Az.Websites -force
+            $env:AZURE_WEBAPP_PUBLISH_PROFILE = Get-AzWebAppPublishingProfile -ResourceGroupName ${{ AZURE_RG }} -Name ${{ AZURE_WEBAPP_NAME }}
+            $env:AZURE_WEBAPP_PUBLISH_PROFILE
+        shell: pwsh
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          publish-profile: ${{ steps.pub_profile.outputs }}
+          publish-profile: ${{ env.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
