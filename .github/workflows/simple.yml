@@ -50,17 +50,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v1
-      - name: ubuntu modules
-        run: Get-Module -ListAvailable
-        shell: pwsh
 
-  get-modules-windows:
-    runs-on: windows-latest
-
-    steps:
-      - uses: actions/checkout@v1
-      - name: windows modules
-        run: Get-Module -ListAvailable
+      - name: install Az modules
+        run: |
+            Set-PSRepository PSGallery -InstallationPolicy Trusted
+            Install-Module Az.Accounts -force
+            Install-Module Az.Websites -force 
+            Get-Module -ListAvailable
         shell: pwsh
 ###
   # deploy-azure-webapp:
