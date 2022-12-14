@@ -14,6 +14,9 @@
         "instanceCount": {
             "value": 2
         },
+        "buildstamp": {
+            "value": "build001"
+        },
         "APPLICATIONINSIGHTS_CONFIGURATION_CONTENT": {
             "value": "{\n  \"role\": {   \n    \"name\": \"app-flowtroller-prod\"\n  }\n}"
         }
