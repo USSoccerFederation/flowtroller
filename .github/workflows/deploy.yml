@@ -6,7 +6,7 @@ env:
 
 on:
   push:
-    branches: ["develop"]
+    branches: ["none"]
   workflow_dispatch:
 
 permissions:
@@ -109,25 +109,25 @@ jobs:
           AZURE_CLIENTSECRET: ${{ secrets.AZURE_CLIENTSECRET }}
           AZURE_TENANTID: ${{ secrets.AZURE_TENANTID }}
         run: |
-            Set-PSRepository PSGallery -InstallationPolicy Trusted
-            Install-Module -Name Az.Accounts -Force
-            Install-Module -Name Az.Websites -Force
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          Install-Module -Name Az.Accounts -Force
+          Install-Module -Name Az.Websites -Force
 
-            $clientId = ($env:AZURE_CLIENTID)
-            $clientSecret = ($env:AZURE_CLIENTSECRET | ConvertTo-SecureString -AsPlainText -Force)
-            $tenantId = ($env:AZURE_TENANTID)
+          $clientId = ($env:AZURE_CLIENTID)
+          $clientSecret = ($env:AZURE_CLIENTSECRET | ConvertTo-SecureString -AsPlainText -Force)
+          $tenantId = ($env:AZURE_TENANTID)
 
-            $credentials = New-Object System.Management.Automation.PSCredential($clientId, $clientSecret)
-            Connect-AzAccount -ServicePrincipal -Credential $credentials -Tenant $tenantId
+          $credentials = New-Object System.Management.Automation.PSCredential($clientId, $clientSecret)
+          Connect-AzAccount -ServicePrincipal -Credential $credentials -Tenant $tenantId
 
-            $env:AZURE_WEBAPP_PUBLISH_PROFILE = (Get-AzWebAppPublishingProfile -ResourceGroupName $env:AZURE_RG -Name $env:AZURE_WEBAPP_NAME)
+          $env:AZURE_WEBAPP_PUBLISH_PROFILE = (Get-AzWebAppPublishingProfile -ResourceGroupName $env:AZURE_RG -Name $env:AZURE_WEBAPP_NAME)
 
-            if($env:AZURE_WEBAPP_PUBLISH_PROFILE) {
-                Write-Output "env variable was set"
-            }
-            else {
-                Write-Output "env variable NOT set!"
-            }
+          if($env:AZURE_WEBAPP_PUBLISH_PROFILE) {
+              Write-Output "env variable was set"
+          }
+          else {
+              Write-Output "env variable NOT set!"
+          }
         shell: pwsh
 
       - name: Deploy to Azure appService
@@ -199,25 +199,25 @@ jobs:
           AZURE_CLIENTSECRET: ${{ secrets.AZURE_CLIENTSECRET }}
           AZURE_TENANTID: ${{ secrets.AZURE_TENANTID }}
         run: |
-            Set-PSRepository PSGallery -InstallationPolicy Trusted
-            Install-Module -Name Az.Accounts -Force
-            Install-Module -Name Az.Websites -Force
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          Install-Module -Name Az.Accounts -Force
+          Install-Module -Name Az.Websites -Force
 
-            $clientId = ($env:AZURE_CLIENTID)
-            $clientSecret = ($env:AZURE_CLIENTSECRET | ConvertTo-SecureString -AsPlainText -Force)
-            $tenantId = ($env:AZURE_TENANTID)
+          $clientId = ($env:AZURE_CLIENTID)
+          $clientSecret = ($env:AZURE_CLIENTSECRET | ConvertTo-SecureString -AsPlainText -Force)
+          $tenantId = ($env:AZURE_TENANTID)
 
-            $credentials = New-Object System.Management.Automation.PSCredential($clientId, $clientSecret)
-            Connect-AzAccount -ServicePrincipal -Credential $credentials -Tenant $tenantId
+          $credentials = New-Object System.Management.Automation.PSCredential($clientId, $clientSecret)
+          Connect-AzAccount -ServicePrincipal -Credential $credentials -Tenant $tenantId
 
-            $env:AZURE_WEBAPP_PUBLISH_PROFILE = (Get-AzWebAppPublishingProfile -ResourceGroupName $env:AZURE_RG -Name $env:AZURE_WEBAPP_NAME)
+          $env:AZURE_WEBAPP_PUBLISH_PROFILE = (Get-AzWebAppPublishingProfile -ResourceGroupName $env:AZURE_RG -Name $env:AZURE_WEBAPP_NAME)
 
-            if($env:AZURE_WEBAPP_PUBLISH_PROFILE) {
-                Write-Output "env variable was set"
-            }
-            else {
-                Write-Output "env variable NOT set!"
-            }
+          if($env:AZURE_WEBAPP_PUBLISH_PROFILE) {
+              Write-Output "env variable was set"
+          }
+          else {
+              Write-Output "env variable NOT set!"
+          }
         shell: pwsh
 
       - name: Deploy to Azure appService
