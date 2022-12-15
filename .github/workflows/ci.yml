@@ -10,7 +10,6 @@ on:
 
 jobs:
   validate:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -19,14 +18,21 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 6.0.x
+    # - name: Lint Code Base
+    #   uses: github/super-linter@v4.9.7
+    #   env:
+    #     VALIDATE_ALL_CODEBASE: false
+    #     VALIDATE_CSHARP: true
+    #     DEFAULT_BRANCH: main
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Restore Dependencies
       run: dotnet restore
     - name: Build
       run: dotnet build --no-restore
     - name: Run Unit Tests
       run: dotnet test --no-build --verbosity normal
-    - name: Upload Test Coverage
-      uses: actions/upload-artifact@v3
-      with:
-        name: code-coverage
-        path: ${{env.DOTNET_ROOT}}/myapp
+    # - name: Upload Test Coverage
+    #   uses: actions/upload-artifact@v3
+    #   with:
+    #     name: code-coverage
+    #     path: ${{env.DOTNET_ROOT}}/myapp
